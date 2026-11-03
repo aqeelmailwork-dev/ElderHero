@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Registration</title>
+    <style>
+        /* --- CSS STYLES --- */
+        :root {
+            --primary-color: #ca7600; --primary-hover: #0093a7;
+            --text-dark: #2c3e50; --text-light: #7f8c8d;
+            --bg-body: #f0f4f7; --bg-white: #ffffff;
+            --error-color: #d93025;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-body); color: var(--text-dark);
+            min-height: 100vh; display: flex; align-items: center; justify-content: center;
+        }
+        .container { width: 100%; max-width: 400px; padding: 20px; }
+        .card {
+            background: var(--bg-white); padding: 40px 30px; border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(202, 118, 0, 0.1); text-align: center;
+        }
+        .logo {
+            width: 100px; height: 100px; border-radius: 50%;
+            border: 4px solid var(--bg-body); margin-bottom: 20px; object-fit: cover; background: #eee;
+        }
+        h1 { font-size: 24px; font-weight: 700; margin-bottom: 10px; }
+        input, select {
+            width: 100%; padding: 12px; margin-bottom: 15px;
+            border: 2px solid #e1e5e8; border-radius: 8px; font-size: 15px; background: #fafbfc;
+        }
+        input:focus, select:focus { outline: none; border-color: var(--primary-color); }
+        .btn-submit {
+            width: 100%; padding: 14px; background: var(--primary-color); color: white;
+            border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s;
+        }
+        .btn-submit:hover { background: var(--primary-hover); }
+        .error-msg { color: var(--error-color); font-size: 14px; margin-bottom: 15px; display: none; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="card">
+        <img src="images/elderhero.png" class="logo" alt="ElderHero Logo">
+        <h1>Admin Sign Up</h1>
+        
+        <div id="error-box" class="error-msg"></div>
+
+        <form id="signup-form">
+            <input type="text" id="adminName" placeholder="Full Name (e.g. Super Admin 01)" required>
+            <input type="email" id="adminEmail" placeholder="Email Address" required>
+            
+            <select id="adminType" required>
+                <option value="" disabled selected>Select Admin Role</option>
+                <option value="superadmin">Super Admin</option>
+                <option value="admin">Admin</option>
+            </select>
+
+            <input type="password" id="password" placeholder="Password" required minlength="6">
+            <button type="submit" class="btn-submit" id="submit-btn">Register</button>
+        </form>
+    </div>
+</div>
+
+<script type="module">
+    // 1. Import Auth and DB instances from your existing file
+    import { auth, db } from './API/firebase.js';
+    
+    // 2. Import specific functions needed for this logic
+    import { createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.6.11/firebase-auth.js";
+    import { ref, set } from "https://www.gstatic.com/firebasejs/9.6.11/firebase-database.js";
+
+    const form = document.getElementById('signup-form');
+    const errorBox = document.getElementById('error-box');
+    const submitBtn = document.getElementById('submit-btn');
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        // Clear errors and disable button
+        errorBox.style.display = 'none';
+        submitBtn.disabled = true;
+        submitBtn.innerText = "Registering...";
+
+        const name = document.getElementById('adminName').value;
+        const email = document.getElementById('adminEmail').value;
+        const type = document.getElementById('adminType').value;
+        const password = document.getElementById('password').value;
+
+        try {
+            // A. Create User in Firebase Authentication
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            const uid = userCredential.user.uid;
+
+            // B. Save Admin Details to Realtime Database
+            await set(ref(db, 'Admins/' + uid), {
+                AdminName: name,
+                AdminEmail: email,
+                AdminType: type
+            });
+
+            // C. Redirect to Dashboard
+            alert('Admin registered successfully!');
+            window.location.href = "dashboard.html";
+
+        } catch (error) {
+            console.error("Error:", error);
+            errorBox.innerText = error.message;
+            errorBox.style.display = 'block';
+            submitBtn.disabled = false;
+            submitBtn.innerText = "Register";
+        }
+    });
+</script>
+
+</body>
+</html>

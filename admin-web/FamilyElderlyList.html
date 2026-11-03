@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Family / Elderly List</title>
+  
+  <link rel="stylesheet" href="style.css">
+  
+  <link rel="stylesheet" href="dashboard.css">
+  
+  <link rel="stylesheet" href="list.css">
+  
+  <link rel="stylesheet" href="familylist.css">
+</head>
+
+<body>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      
+      <div class="welcome-banner">
+        <h1>Family / Elderly List</h1>
+        <p>Directory of registered family members and elderly individuals.</p>
+      </div>
+
+      <div class="page-controls">
+        <div class="filters-group">
+          <input type="text" id="searchInput" class="search-input" placeholder="Search by name, email, or phone...">
+          
+          <select id="typeFilter" class="filter-select">
+            <option value="All">All Types</option>
+            <option value="Family">Family</option>
+            <option value="Elderly">Elderly</option>
+          </select>
+        </div>
+        
+        <button id="refreshBtn" class="btn-refresh">Refresh List</button>
+      </div>
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Profile</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Phone</th>
+              <th>Age</th>
+              <th>Gender</th>
+              <th>Type</th>
+            </tr>
+          </thead>
+          <tbody id="familyTableBody">
+            <tr>
+              <td colspan="7" style="text-align:center; padding: 30px; color: var(--text-grey);">
+                Loading data...
+                <div class="loader" style="margin: 10px auto; border-color: #eee; border-top-color: var(--primary-color);"></div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </main>
+
+  <script type="module" src="familylist.js"></script>
+</body>
+</html>

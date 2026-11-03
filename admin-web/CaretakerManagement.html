@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Caretaker Management</title>
+
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="dashboard.css">
+  <link rel="stylesheet" href="list.css">
+  <link rel="stylesheet" href="user-management.css">
+
+  <script type="module">
+    import { initLayout } from './layout.js';
+    initLayout('CaretakerManagement.html');
+  </script>
+
+  <script type="module">
+    import { db, auth } from "./API/firebase.js";
+    import { ref, get, set } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
+
+    let ADMIN_UID = null;
+    let allRows = [];
+
+    onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        window.location.href = "login.html";
+        return;
+      }
+      ADMIN_UID = user.uid;
+      loadData();
+    });
+
+    async function loadData() {
+      const tbody = document.getElementById("caretakerTableBody");
+      tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; padding:25px;">Loading data...</td></tr>`;
+
+      try {
+        // Fetch Caretakers, Reviews, Management Status, AND Admins
+        const [caretakersSnap, reviewsSnap, managementSnap, adminsSnap] = await Promise.all([
+          get(ref(db, "Caretakers")),
+          get(ref(db, "Reviews")),
+          get(ref(db, "CaretakerManagement")),
+          get(ref(db, "Admins")) // Fetch Admin names
+        ]);
+
+        const caretakers = caretakersSnap.exists() ? caretakersSnap.val() : {};
+        const reviews = reviewsSnap.exists() ? reviewsSnap.val() : {};
+        const management = managementSnap.exists() ? managementSnap.val() : {};
+        const adminsMap = adminsSnap.exists() ? adminsSnap.val() : {};
+
+        // Calculate Average Ratings
+        const ratings = {};
+        Object.values(reviews).forEach(r => {
+          if (!ratings[r.CaretakerID]) {
+            ratings[r.CaretakerID] = { total: 0, count: 0 };
+          }
+          ratings[r.CaretakerID].total += parseFloat(r.ReviewRating || 0);
+          ratings[r.CaretakerID].count++;
+        });
+
+        allRows = [];
+
+        Object.keys(caretakers).forEach(id => {
+          const c = caretakers[id];
+          const m = management[id] || {};
+
+          // Calculate Rating
+          const avg = ratings[id]
+            ? (ratings[id].total / ratings[id].count).toFixed(1)
+            : "N/A";
+
+          // Resolve Admin Name who did the last update
+          const lastAdminId = m.AdminID;
+          let adminNameDisplay = "-";
+          
+          if (lastAdminId) {
+             // Look up name in Admins map, or fallback if ID exists but name doesn't
+             adminNameDisplay = adminsMap[lastAdminId]?.AdminName || "Unknown Admin";
+          }
+
+          allRows.push({
+            id,
+            name: c.CaretakerName || "-",
+            email: c.CaretakerEmail || "-",
+            phone: c.CaretakerPhoneNo || "-",
+            image: c.CaretakerProfileUrl || "https://via.placeholder.com/45",
+            rating: avg,
+            status: m.CaretakerManagementStatus || "Active",
+            reason: m.CaretakerManagementReason || "-",
+            adminName: adminNameDisplay // Added field
+          });
+        });
+
+        applyFilter();
+
+      } catch (err) {
+        console.error(err);
+        tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; color:var(--danger);">Error loading data. Check console.</td></tr>`;
+      }
+    }
+
+    // Expose function to window for the search input
+    window.applyFilter = () => {
+      const q = document.getElementById("searchInput").value.toLowerCase();
+
+      const filtered = allRows.filter(r =>
+        r.name.toLowerCase().includes(q) ||
+        r.email.toLowerCase().includes(q) ||
+        r.status.toLowerCase().includes(q)
+      );
+
+      renderTable(filtered);
+    };
+
+    function renderTable(rows) {
+      const tbody = document.getElementById("caretakerTableBody");
+      tbody.innerHTML = "";
+
+      if (rows.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; padding:20px;">No caretakers found</td></tr>`;
+        return;
+      }
+
+      rows.forEach(r => {
+        let badgeClass = "status-active";
+        if (r.status === "Warning") badgeClass = "status-warning";
+        if (r.status === "Suspended") badgeClass = "status-suspended";
+
+        const ratingDisplay = r.rating === "N/A"
+          ? `<span style="color:#999; font-size:12px;">No reviews</span>`
+          : `<div class="rating-box">★ ${r.rating}</div>`;
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td><img src="${r.image}" class="profile-thumb" alt="Profile"></td>
+          <td><strong>${r.name}</strong></td>
+          <td>${r.email}</td>
+          <td>${r.phone}</td>
+          <td>${ratingDisplay}</td>
+          <td><span class="status-badge ${badgeClass}">${r.status}</span></td>
+          <td style="max-width:150px; font-size:13px; color:#666;">${r.reason}</td>
+          <td style="font-size:13px; color:#555;">${r.adminName}</td> <td>
+            <div class="action-group">
+              <button class="btn-action btn-warn" onclick="window.takeAction('Warning','${r.id}')">⚠ Warn</button>
+              <button class="btn-action btn-suspend" onclick="window.takeAction('Suspended','${r.id}')">⛔ Suspend</button>
+              <button class="btn-action btn-activate" onclick="window.takeAction('Active','${r.id}')">✔ Activate</button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Expose function to window for buttons
+    window.takeAction = async (status, caretakerId) => {
+      let reason = "-";
+
+      if (status !== "Active") {
+        reason = prompt(`Enter reason for marking as ${status}:`);
+        if (!reason) return; // Cancelled
+      } else {
+        if(!confirm("Re-activate this account?")) return;
+        reason = "Account Reactivated by Admin";
+      }
+
+      try {
+        await set(ref(db, "CaretakerManagement/" + caretakerId), {
+          CaretakerManagementID: caretakerId,
+          CaretakerManagementStatus: status,
+          CaretakerManagementReason: reason,
+          CaretakerID: caretakerId,
+          AdminID: ADMIN_UID, // Records current admin ID
+          LastUpdated: new Date().toISOString()
+        });
+        
+        // Refresh data to show new status
+        loadData();
+      } catch (error) {
+        alert("Failed to update status: " + error.message);
+      }
+    };
+  </script>
+</head>
+
+<body>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+
+      <div class="welcome-banner">
+        <h1>Caretaker Management</h1>
+        <p>Monitor performance, status, and manage caretaker accounts.</p>
+      </div>
+
+      <div class="page-controls">
+        <input id="searchInput" class="search-input" 
+               placeholder="Search by name, email, or status..." 
+               onkeyup="window.applyFilter()">
+        
+        <button class="btn-refresh" onclick="location.reload()">Refresh Data</button>
+      </div>
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Profile</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Phone</th>
+              <th>Rating</th>
+              <th>Status</th>
+              <th>Reason</th>
+              <th>Last Updated By</th> <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="caretakerTableBody"></tbody>
+        </table>
+      </div>
+
+    </div>
+  </main>
+
+</body>
+</html>

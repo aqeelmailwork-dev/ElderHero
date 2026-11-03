@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ElderHero Admin Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="dashboard.css">
+  
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <div class="welcome-banner">
+        <h1>Dashboard Overview</h1>
+        <p>Welcome back to the ElderHero Admin Portal.</p>
+      </div>
+
+      <div class="stats-grid">
+        <div class="card" onclick="window.location.href='submissions.html'">
+          <div class="card-header-flex">
+            <h3>Pending Submissions</h3>
+            <div class="stat-number" id="submissionCount">-</div>
+          </div>
+          <p>Review new PDF applications</p>
+          <span class="card-link-text">View &rarr;</span>
+        </div>
+        
+        <div class="card" onclick="window.location.href='view-reports.html'">
+          <div class="card-header-flex">
+            <h3>Pending Reports</h3>
+            <div class="stat-number" id="reportCount">-</div>
+          </div>
+          <p>Check flagged issues</p>
+          <span class="card-link-text">View &rarr;</span>
+        </div>
+
+        <div class="card" onclick="window.location.href='carelist.html'">
+          <div class="card-header-flex">
+            <h3>Caretaker Database</h3>
+            <div class="stat-number" id="caretakerCount">-</div>
+          </div>
+          <p>View all registered caretakers</p>
+          <span class="card-link-text">View &rarr;</span>
+        </div>
+
+        <div class="card" onclick="window.location.href='FamilyElderlyList.html'">
+          <div class="card-header-flex">
+            <h3>Family Database</h3>
+            <div class="stat-number" id="familyCount">-</div>
+          </div>
+          <p>View registered families</p>
+          <span class="card-link-text">View &rarr;</span>
+        </div>
+      </div>
+
+      <div class="charts-section">
+        <h2 style="margin: 40px 0 20px;">Analytics & Insights</h2>
+        <div class="charts-grid">
+            
+            <div class="card chart-card">
+                <h3>Most Popular Services</h3>
+                <div class="chart-container">
+                    <canvas id="categoryChart"></canvas>
+                </div>
+            </div>
+
+            <div class="card chart-card">
+                <h3>Booking Status Overview</h3>
+                <div class="chart-container">
+                    <canvas id="statusChart"></canvas>
+                </div>
+            </div>
+
+            <div class="card chart-card">
+                <h3>Top Rated Caretakers</h3>
+                <div class="chart-container">
+                    <canvas id="caretakerRankChart"></canvas>
+                </div>
+            </div>
+
+            <div class="card chart-card">
+                <h3>Booking Trends (Last 7 Days)</h3>
+                <div class="chart-container">
+                    <canvas id="trendChart"></canvas>
+                </div>
+            </div>
+
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <script type="module" src="dashboard.js"></script>
+</body>
+</html>

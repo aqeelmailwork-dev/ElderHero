@@ -1,0 +1,14 @@
+services:
+  firebase-emulator:
+    build: .
+    container_name: firebase-emulator
+    restart: unless-stopped
+    init: true
+    stop_grace_period: 60s
+    # Host networking lets the Realtime Database listen on (and advertise) the server's real IP.
+    network_mode: host
+    volumes:
+      - ./firebase.json:/srv/firebase.json:ro
+      - ./database.rules.json:/srv/database.rules.json:ro
+      - ./storage.rules:/srv/storage.rules:ro
+      - ./data:/srv/data

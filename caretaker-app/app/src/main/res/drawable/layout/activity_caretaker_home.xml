@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F6F5F0"
+    android:orientation="vertical"
+    android:padding="20dp">
+
+    <!-- Logo & Greeting -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:layout_marginBottom="24dp">
+
+        <ImageView
+            android:id="@+id/logo"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:src="@drawable/elderhero"
+            android:contentDescription="ElderHero Logo"
+            android:layout_marginBottom="12dp" />
+
+        <TextView
+            android:id="@+id/welcomeText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Welcome Caretaker"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="#5A3D2B" />
+
+        <!-- 🔴 Preview Mode Label -->
+        <TextView
+            android:id="@+id/previewLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="(Preview Mode)"
+            android:textColor="#B23B3B"
+            android:textStyle="italic"
+            android:textSize="14sp"
+            android:layout_marginTop="4dp" />
+    </LinearLayout>
+
+    <!-- Dashboard Buttons -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <!-- Profile -->
+        <Button
+            android:id="@+id/btnProfile"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="👤 View Profile"
+            android:padding="14dp"
+            android:layout_marginBottom="12dp"
+            android:backgroundTint="#5A3D2B"
+            android:textColor="@android:color/white" />
+
+        <!-- Submit Documents -->
+        <Button
+            android:id="@+id/btnSubmit"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="📄 Submit Documents"
+            android:padding="14dp"
+            android:layout_marginBottom="12dp"
+            android:backgroundTint="#A57A3C"
+            android:textColor="@android:color/white" />
+
+        <!-- Advertise Service -->
+        <Button
+            android:id="@+id/btnAdvertise"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="📢 Advertise Service"
+            android:padding="14dp"
+            android:layout_marginBottom="20dp"
+            android:backgroundTint="#5A3D2B"
+            android:textColor="@android:color/white" />
+
+        <!-- View Bookings -->
+        <Button
+            android:id="@+id/btnViewBookings"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="📅 View Bookings"
+            android:padding="14dp"
+            android:layout_marginBottom="12dp"
+            android:backgroundTint="#4A7C59"
+            android:textColor="@android:color/white" />
+
+        <!-- View Messages -->
+        <Button
+            android:id="@+id/btnViewMessages"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="💬 View Messages"
+            android:padding="14dp"
+            android:layout_marginBottom="12dp"
+            android:backgroundTint="#4A90E2"
+            android:textColor="@android:color/white" />
+
+    </LinearLayout>
+
+    <!-- Logout Button -->
+    <Button
+        android:id="@+id/btnLogout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="🚪 Log Out"
+        android:padding="14dp"
+        android:backgroundTint="#B23B3B"
+        android:textColor="@android:color/white"
+        android:layout_marginTop="12dp" />
+
+</LinearLayout>

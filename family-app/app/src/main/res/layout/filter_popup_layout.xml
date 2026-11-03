@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/filterCard"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginLeft="24dp"
+    android:layout_marginRight="24dp"
+    app:cardCornerRadius="20dp"
+    app:cardElevation="8dp"
+    app:cardUseCompatPadding="true"
+    app:cardBackgroundColor="#F6F5F0">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:padding="16dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/tvServiceFiltersTitle"
+                android:text="Service Filters"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:textColor="#5A3D2B"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="6dp" />
+
+            <TextView
+                android:id="@+id/tvCategoryLabel"
+                android:text="Category"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textColor="#444444"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="4dp" />
+
+            <Spinner
+                android:id="@+id/spinnerFilterCategory"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginBottom="10dp"
+                android:background="@android:drawable/edit_text" />
+
+            <TextView
+                android:id="@+id/labelSubService"
+                android:text="Sub-service"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textColor="#444444"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="4dp"
+                android:visibility="gone" />
+
+            <Spinner
+                android:id="@+id/spinnerFilterSubService"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginBottom="10dp"
+                android:background="@android:drawable/edit_text"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/tvAvailabilityLabel"
+                android:text="Availability"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textColor="#444444"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="4dp" />
+
+            <Spinner
+                android:id="@+id/spinnerFilterAvailability"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginBottom="16dp"
+                android:background="@android:drawable/edit_text" />
+
+            <TextView
+                android:id="@+id/tvRateLabel"
+                android:text="Rate (RM) - Min / Max"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textColor="#444444"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="4dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <EditText
+                    android:id="@+id/etMinRate"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="48dp"
+                    android:inputType="numberDecimal"
+                    android:hint="Min"
+                    android:padding="10dp"
+                    android:background="@android:drawable/edit_text"
+                    android:layout_marginEnd="8dp" />
+
+                <EditText
+                    android:id="@+id/etMaxRate"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="48dp"
+                    android:inputType="numberDecimal"
+                    android:hint="Max"
+                    android:padding="10dp"
+                    android:background="@android:drawable/edit_text" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tvLocationLabel"
+                android:text="Location"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textColor="#444444"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="4dp" />
+
+            <Spinner
+                android:id="@+id/spinnerFilterLocation"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginBottom="12dp"
+                android:background="@android:drawable/edit_text"
+                android:visibility="gone" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="#CCCCCC"
+                android:layout_marginBottom="14dp" />
+
+            <TextView
+                android:id="@+id/tvCaretakerFiltersTitle"
+                android:text="Caretaker Filters"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:textColor="#5A3D2B"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="6dp" />
+
+            <TextView
+                android:id="@+id/tvGenderLabel"
+                android:text="Gender"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textColor="#444444"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="4dp" />
+
+            <Spinner
+                android:id="@+id/spinnerFilterGender"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginBottom="10dp"
+                android:background="@android:drawable/edit_text" />
+
+            <TextView
+                android:id="@+id/tvRaceLabel"
+                android:text="Race"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textColor="#444444"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="4dp" />
+
+            <Spinner
+                android:id="@+id/spinnerFilterRace"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginBottom="10dp"
+                android:background="@android:drawable/edit_text" />
+
+            <TextView
+                android:id="@+id/tvAgeRangeLabel"
+                android:text="Age Range"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textColor="#444444"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="4dp" />
+
+            <Spinner
+                android:id="@+id/spinnerFilterAge"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginBottom="10dp"
+                android:background="@android:drawable/edit_text" />
+
+            <TextView
+                android:id="@+id/tvExperienceLabel"
+                android:text="Experience"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textColor="#444444"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="4dp" />
+
+            <Spinner
+                android:id="@+id/spinnerFilterExperience"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginBottom="10dp"
+                android:background="@android:drawable/edit_text"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/tvLanguageLabel"
+                android:text="Language"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textColor="#444444"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="4dp" />
+
+            <Spinner
+                android:id="@+id/spinnerFilterLanguage"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginBottom="10dp"
+                android:background="@android:drawable/edit_text" />
+
+            <TextView
+                android:id="@+id/tvProfessionLabel"
+                android:text="Profession"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textColor="#444444"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="4dp" />
+
+            <Spinner
+                android:id="@+id/spinnerFilterProfession"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginBottom="16dp"
+                android:background="@android:drawable/edit_text"
+                android:visibility="gone" />
+
+            <Button
+                android:id="@+id/btnApplyFilter"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:backgroundTint="#5A3D2B"
+                android:text="Apply Filters"
+                android:textColor="@android:color/white"
+                android:textStyle="bold"
+                android:textSize="15sp"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="8dp" />
+
+        </LinearLayout>
+    </ScrollView>
+
+</androidx.cardview.widget.CardView>

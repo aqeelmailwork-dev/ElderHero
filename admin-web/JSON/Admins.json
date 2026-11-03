@@ -1,0 +1,9 @@
+{
+  "Admins": {
+    "Bn3c4vC6qJfmuXTXQQHcgXAcDRk1": {
+      "AdminEmail": "admin@example.com",
+      "AdminType": "superadmin",
+      "AdminName": "Super Admin 01"
+    }
+  }
+}

@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>View Reports (Admin)</title>
+  
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="dashboard.css">
+  <link rel="stylesheet" href="list.css">
+  <link rel="stylesheet" href="user-management.css">
+  
+  <style>
+    /* Specific overrides for this table's content width */
+    .col-desc { 
+      max-width: 250px; 
+      word-wrap: break-word; 
+      font-size: 13px;
+      color: #555;
+    }
+    /* Clickable Cell Styling */
+    .clickable-cell {
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+    .clickable-cell:hover {
+      background-color: rgba(192, 160, 98, 0.1);
+    }
+    .clickable-name {
+      font-weight: 700;
+      color: var(--primary-color);
+      text-decoration: underline;
+      text-decoration-style: dotted;
+    }
+  </style>
+
+  <script type="module">
+    import { initLayout } from './layout.js';
+    initLayout('view-reports.html');
+  </script>
+
+  <script type="module">
+    import { db, auth } from "./API/firebase.js";
+    import { ref, get, update } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
+
+    let ADMIN_UID = null;
+    let caretakerMap = {};
+    let familyMap = {};
+    let adminMap = {};
+    let allReportsData = [];
+
+    // Modal Elements
+    let userModal, modalContent;
+
+    document.addEventListener("DOMContentLoaded", () => {
+      userModal = document.getElementById("userModal");
+      modalContent = document.getElementById("modalContent");
+
+      // Close modal on overlay click
+      userModal.addEventListener("click", (e) => {
+        if(e.target === userModal) userModal.classList.remove("show");
+      });
+
+      onAuthStateChanged(auth, (user) => {
+        if (!user) {
+          window.location.href = "login.html";
+          return;
+        }
+        ADMIN_UID = user.uid;
+        loadReports();
+      });
+    });
+
+    // --- 1. MAP BUILDERS (Now fetches Photos too) ---
+    function buildUserMap(snapshot, userType) {
+      const map = {};
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        Object.keys(data).forEach(key => {
+          const val = data[key];
+          let name = "Unknown";
+          let photo = "";
+
+          // Extract specific fields based on User Type
+          if (userType === 'Caretaker') {
+            name = val.CaretakerName || val.name || "Unknown";
+            photo = val.CaretakerProfileUrl || "";
+          } else {
+            // Family
+            name = val.FamilyElderlyName || val.name || "Unknown";
+            photo = val.FamilyElderlyURL || "";
+          }
+
+          map[key] = { name, photo, role: userType };
+        });
+      }
+      return map;
+    }
+
+    function buildAdminMap(snapshot) {
+      const map = {};
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        Object.keys(data).forEach(key => {
+          map[key] = data[key].AdminName || "Unknown Admin";
+        });
+      }
+      return map;
+    }
+
+    // --- 2. LOAD REPORTS ---
+    async function loadReports() {
+      const tableBody = document.getElementById("reportsTableBody");
+      tableBody.innerHTML = `<tr><td colspan="10" style="text-align:center; padding: 30px; color: #999;"><div class="loader" style="margin: 0 auto; border-color: #c0a062; border-top-color: transparent;"></div></td></tr>`;
+
+      try {
+        const [reportsSnap, caretakersSnap, familySnap, adminsSnap] = await Promise.all([
+          get(ref(db, "Reports")),
+          get(ref(db, "Caretakers")),
+          get(ref(db, "FamilyElderly")),
+          get(ref(db, "Admins"))
+        ]);
+
+        // Build rich maps containing Name AND Photo
+        caretakerMap = buildUserMap(caretakersSnap, 'Caretaker');
+        familyMap = buildUserMap(familySnap, 'Family');
+        adminMap = buildAdminMap(adminsSnap);
+
+        if (!reportsSnap.exists()) {
+          tableBody.innerHTML = `<tr><td colspan="10" style="text-align:center; padding: 20px;">No reports found.</td></tr>`;
+          return;
+        }
+
+        const data = reportsSnap.val();
+        allReportsData = [];
+        tableBody.innerHTML = "";
+
+        // Iterate Booking IDs
+        Object.keys(data).forEach(bookingID => {
+          const reportsGroup = data[bookingID];
+
+          // Iterate Report IDs
+          Object.keys(reportsGroup).forEach(reportID => {
+            const r = reportsGroup[reportID];
+
+            // Date & Time
+            let dateStr = "-";
+            let timeStr = "-";
+            if (r.ReportTime) {
+              const d = new Date(r.ReportTime);
+              dateStr = d.toLocaleDateString();
+              timeStr = d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+            }
+
+            // --- IDENTIFY USERS ---
+            const familyID = r.FamiliyElderlyID;
+            const caretakerID = r.CaretakerID;
+            const reporterID = r.ReporterID;
+
+            // Get Objects from Map (or fallback)
+            const familyObj = familyMap[familyID] || { name: "Unknown Family", photo: "", role: "Family" };
+            const caretakerObj = caretakerMap[caretakerID] || { name: "Unknown Caretaker", photo: "", role: "Caretaker" };
+
+            let reporterObj = { name: "Unknown", id: reporterID, photo: "", role: "?" };
+            let reportedObj = { name: "Unknown", id: "Unknown", photo: "", role: "?" };
+
+            // Determine who reported who
+            if (reporterID === familyID) {
+              reporterObj = { ...familyObj, id: familyID }; // Reporter is Family
+              reportedObj = { ...caretakerObj, id: caretakerID }; // Reported is Caretaker
+            } else if (reporterID === caretakerID) {
+              reporterObj = { ...caretakerObj, id: caretakerID }; // Reporter is Caretaker
+              reportedObj = { ...familyObj, id: familyID }; // Reported is Family
+            }
+
+            const category = r.ReportCategory || "General";
+            const desc = r.ReportDetails || "No details provided";
+            const status = r.ReportStatus || "Pending";
+
+            // Admin Resolution
+            const resolvedByID = r.ResolvedBy;
+            const resolvedByName = resolvedByID ? (adminMap[resolvedByID] || "Unknown Admin") : "-";
+
+            // Data Object for HTML generation
+            const rowData = {
+              bookingID,
+              reportID,
+              date: dateStr,
+              time: timeStr,
+              reporter: reporterObj,
+              reported: reportedObj,
+              category,
+              desc,
+              status,
+              resolvedByName
+            };
+
+            allReportsData.push(rowData);
+            tableBody.appendChild(createRowHTML(rowData));
+          });
+        });
+
+      } catch (error) {
+        console.error("Error loading reports:", error);
+        tableBody.innerHTML = `<tr><td colspan="10" style="color:var(--danger); text-align:center;">Error: ${error.message}</td></tr>`;
+      }
+    }
+
+    // --- 3. HTML ROW BUILDER ---
+    function createRowHTML(data) {
+      const row = document.createElement("tr");
+
+      // Status Class
+      let statusClass = "status-pending";
+      if (data.status === "Resolved") statusClass = "status-approved";
+
+      const isResolved = data.status === "Resolved";
+
+      // Helper to escape quotes for onclick
+      const safeStr = (str) => str ? str.replace(/'/g, "\\'") : "";
+
+      row.innerHTML = `
+        <td>${data.date}</td>
+        <td>${data.time}</td>
+        
+        <td class="clickable-cell" 
+            onclick="window.showUserInfo('${safeStr(data.reporter.name)}', '${data.reporter.id}', '${data.reporter.role}', '${safeStr(data.reporter.photo)}')"
+            title="Click to view profile">
+           <div class="clickable-name">${data.reporter.name}</div>
+           <div style="font-size:11px; color:#888;">(${data.reporter.role})</div>
+        </td>
+
+        <td class="clickable-cell" 
+            onclick="window.showUserInfo('${safeStr(data.reported.name)}', '${data.reported.id}', '${data.reported.role}', '${safeStr(data.reported.photo)}')"
+            title="Click to view profile">
+           <div class="clickable-name">${data.reported.name}</div>
+           <div style="font-size:11px; color:#888;">(${data.reported.role})</div>
+        </td>
+
+        <td>${data.category}</td>
+        <td class="col-desc">${data.desc}</td>
+        <td><span class="status-badge ${statusClass}">${data.status}</span></td>
+        <td style="font-size:13px; color:#555;">${data.resolvedByName}</td>
+        <td>
+          ${
+            !isResolved
+              ? `<button class="btn-action btn-activate" onclick="window.resolveReport('${data.bookingID}', '${data.reportID}')">✔ Resolve</button>`
+              : `<span style="color:#aaa; font-size:12px;">Completed</span>`
+          }
+        </td>
+      `;
+      return row;
+    }
+
+    // --- 4. SEARCH FILTER ---
+    window.filterReports = () => {
+      const input = document.getElementById("searchInput").value.toLowerCase();
+      const tableBody = document.getElementById("reportsTableBody");
+      tableBody.innerHTML = "";
+
+      const filtered = allReportsData.filter(r => {
+        return (
+          r.reporter.name.toLowerCase().includes(input) ||
+          r.reported.name.toLowerCase().includes(input) ||
+          r.category.toLowerCase().includes(input) ||
+          r.status.toLowerCase().includes(input) ||
+          r.resolvedByName.toLowerCase().includes(input)
+        );
+      });
+
+      if (filtered.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="10" style="text-align:center; padding:20px;">No matches found</td></tr>`;
+      } else {
+        filtered.forEach(r => {
+          tableBody.appendChild(createRowHTML(r));
+        });
+      }
+    };
+
+    // --- 5. RESOLVE REPORT ---
+    window.resolveReport = async (bookingId, reportId) => {
+      if (!confirm("Mark this report as resolved?")) return;
+
+      try {
+        await update(ref(db, `Reports/${bookingId}/${reportId}`), {
+          ReportStatus: "Resolved",
+          ResolvedBy: ADMIN_UID,
+          ResolvedAt: new Date().toISOString()
+        });
+        loadReports();
+      } catch (error) {
+        alert("Error updating report: " + error.message);
+      }
+    };
+
+    // --- 6. USER INFO POPUP LOGIC ---
+    window.showUserInfo = function(name, id, role, photoUrl) {
+      // 1. Image Logic (Photo vs Initials)
+      let imageDisplayHtml = '';
+      if (photoUrl && photoUrl !== 'undefined' && photoUrl.trim() !== '') {
+         imageDisplayHtml = `
+            <img src="${photoUrl}" alt="${name}" 
+                 style="width:90px; height:90px; margin:0 auto 15px; border-radius:50%; 
+                        object-fit:cover; border:3px solid var(--primary-color); 
+                        box-shadow: 0 4px 15px rgba(0,0,0,0.15); display:block;">
+         `;
+      } else {
+         const colors = ['#e0f2f1', '#fff3e0', '#f3e5f5', '#e3f2fd', '#fbe9e7'];
+         const randomColor = colors[name.charCodeAt(0) % colors.length];
+         imageDisplayHtml = `
+            <div style="width:90px; height:90px; margin:0 auto 15px; background:${randomColor}; 
+                        border-radius:50%; display:flex; align-items:center; justify-content:center; 
+                        font-size:36px; font-weight:bold; color:var(--primary-color); 
+                        border:3px solid var(--gold-border); box-shadow: 0 4px 15px rgba(0,0,0,0.15);">
+                ${name.charAt(0).toUpperCase()}
+            </div>
+         `;
+      }
+
+      // 2. Render Modal
+      modalContent.innerHTML = `
+         <div style="text-align:center; padding: 20px 0;">
+            ${imageDisplayHtml}
+            <h2 style="margin-bottom:5px; color:var(--text-dark);">${name}</h2>
+            <span class="status-badge status-active" style="background:#3e342d; color:#fff;">${role}</span>
+            
+            <div style="margin-top:30px; text-align:left;">
+                <label style="font-size:12px; color:var(--text-grey); font-weight:600; text-transform:uppercase;">User ID</label>
+                <div style="background:#f9fafb; border:1px solid #ddd; padding:12px; border-radius:8px; 
+                            font-family:'Courier New', monospace; display:flex; justify-content:space-between; align-items:center;">
+                    <span style="color:#333; font-weight:600; font-size:14px; word-break:break-all;">${id}</span>
+                    <button onclick="copyToClipboard('${id}')" 
+                            style="border:none; background:rgba(192, 160, 98, 0.1); color:var(--primary-color); 
+                                   padding:5px 10px; border-radius:4px; cursor:pointer; font-weight:bold; font-size:12px; margin-left:10px;">
+                        COPY
+                    </button>
+                </div>
+            </div>
+         </div>
+      `;
+      userModal.classList.add("show");
+    };
+
+    window.copyToClipboard = function(text) {
+        navigator.clipboard.writeText(text).then(() => {
+            const btn = event.target;
+            const originalText = btn.innerText;
+            btn.innerText = "COPIED!";
+            btn.style.backgroundColor = "#28a745";
+            btn.style.color = "white";
+            setTimeout(() => {
+                btn.innerText = originalText;
+                btn.style.backgroundColor = "rgba(192, 160, 98, 0.1)";
+                btn.style.color = "var(--primary-color)";
+            }, 1500);
+        });
+    }
+
+    // Close Modal Button Logic (if X button exists in generic modal)
+    window.closeUserModal = function() {
+      userModal.classList.remove("show");
+    }
+  </script>
+</head>
+
+<body>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      
+      <div class="welcome-banner">
+        <h1>Reports Management</h1>
+        <p>Monitor and resolve issues reported by users.</p>
+      </div>
+
+      <div class="page-controls">
+        <input type="text" id="searchInput" class="search-input" 
+               placeholder="Search reports..." 
+               onkeyup="window.filterReports()">
+        
+        <button onclick="location.reload()" class="btn-refresh">Refresh Data</button>
+      </div>
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Time</th>
+              <th>Reported By</th>
+              <th>Reported User</th>
+              <th>Category</th>
+              <th class="col-desc">Details</th>
+              <th>Status</th>
+              <th>Resolved By</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="reportsTableBody"></tbody>
+        </table>
+      </div>
+
+    </div>
+  </main>
+
+  <div id="userModal" class="overlay">
+    <div class="card" style="max-width: 400px; margin: 15vh auto; position: relative;">
+        <button onclick="window.closeUserModal()" 
+                style="position:absolute; top:15px; right:15px; background:none; border:none; font-size:24px; cursor:pointer; color:#999;">
+          &times;
+        </button>
+        <div id="modalContent"></div>
+    </div>
+  </div>
+
+</body>
+</html>

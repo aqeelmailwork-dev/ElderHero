@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking Management - ElderHero Admin</title>
+    
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="dashboard.css">
+    <link rel="stylesheet" href="list.css">
+    <link rel="stylesheet" href="user-management.css">
+</head>
+<body>
+
+    <div class="main-content">
+        <div class="content-wrapper">
+            
+            <div class="welcome-banner">
+                <h1>Booking Management</h1>
+                <p>Monitor and manage service appointments between families and caretakers.</p>
+            </div>
+
+            <div class="page-controls">
+                <div class="filters-group">
+                    <input type="text" id="searchInput" class="search-input" placeholder="Search by ID, Name or Date...">
+                    
+                    <select id="statusFilter" class="filter-select">
+                        <option value="All">All Statuses</option>
+                        <option value="Pending">Pending</option>
+                        <option value="Accepted">Accepted</option>
+                        <option value="Completed">Completed</option>
+                        <option value="Rejected">Rejected</option>
+                    </select>
+                </div>
+                <button id="refreshBtn" class="btn-refresh">
+                    &#x21bb; Refresh List
+                </button>
+            </div>
+
+            <div class="table-container">
+                <table id="bookingsTable">
+                    <thead>
+                        <tr>
+                            <th>Booking Info</th>
+                            <th>Family (Booker)</th>
+                            <th>Caretaker (Provider)</th>
+                            <th>Duration</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <tr>
+                            <td colspan="6" style="text-align:center; padding: 30px;">
+                                <div class="loader" style="margin: 0 auto; border-color: #c0a062; border-top-color: transparent;"></div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+
+    <div id="bookingModal" class="overlay">
+        <div class="card" style="max-width: 500px; margin: 10vh auto; position: relative;">
+            <div class="card-header-flex">
+                <h3>Booking Details</h3>
+                <button id="closeModal" style="background:none; border:none; font-size:20px; cursor:pointer;">&times;</button>
+            </div>
+            <div id="modalContent" style="margin-top: 15px;">
+                </div>
+        </div>
+    </div>
+
+    <script type="module" src="bookings.js"></script>
+</body>
+</html>

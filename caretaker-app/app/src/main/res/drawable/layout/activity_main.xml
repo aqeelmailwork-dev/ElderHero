@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="24dp"
+    android:background="#F6F5F0">
+
+    <!-- Logo -->
+    <ImageView
+        android:id="@+id/logo"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        android:src="@drawable/elderhero"
+        android:layout_marginBottom="20dp"
+        android:contentDescription="ElderHero Logo" />
+
+    <!-- Title -->
+    <TextView
+        android:id="@+id/welcomeText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Welcome to ElderHero"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:textColor="#5A3D2B"
+        android:paddingBottom="20dp"/>
+    <!-- Preview Caretaker Dashboard Button -->
+    <Button
+        android:id="@+id/caretakerPreviewBtn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Caretakers"
+        android:padding="14dp"
+        android:backgroundTint="#5A3D2B"
+        android:textColor="@android:color/white"/>
+
+    <!-- Family/Elderly Login Button -->
+    <Button
+        android:id="@+id/familySignupBtn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Family / Elderly Login"
+        android:padding="14dp"
+        android:backgroundTint="#A57A3C"
+        android:textColor="@android:color/white"
+        android:layout_marginBottom="16dp"/>
+
+
+
+</LinearLayout>

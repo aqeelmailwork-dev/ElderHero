@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Family / Elderly Management</title>
+  
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="dashboard.css">
+  <link rel="stylesheet" href="list.css">
+  <link rel="stylesheet" href="user-management.css">
+
+  <script type="module">
+    import { initLayout } from './layout.js';
+    // This injects the sidebar and marks the link active
+    initLayout('FamilyElderlyManagment.html');
+  </script>
+
+  <script type="module">
+    import { db, auth } from "./API/firebase.js";
+    import { ref, get, set } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
+
+    let ADMIN_UID = null;
+    let allRows = [];
+
+    document.addEventListener("DOMContentLoaded", () => {
+      onAuthStateChanged(auth, (user) => {
+        if (!user) {
+          window.location.href = "login.html";
+          return;
+        }
+        ADMIN_UID = user.uid;
+        loadData();
+      });
+    });
+
+    // --- Main Loader ---
+    async function loadData() {
+      const tbody = document.getElementById("familyTableBody");
+      tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; padding: 30px; color: #999;">Loading data...</td></tr>`;
+      
+      try {
+        // Fetch Families, Management Status, AND Admins
+        const [familiesSnap, managementSnap, adminsSnap] = await Promise.all([
+          get(ref(db, "FamilyElderly")),
+          get(ref(db, "FamilyElderlyManagment")),
+          get(ref(db, "Admins")) // Fetch Admin names
+        ]);
+
+        const families = familiesSnap.exists() ? familiesSnap.val() : {};
+        const management = managementSnap.exists() ? managementSnap.val() : {};
+        const adminsMap = adminsSnap.exists() ? adminsSnap.val() : {};
+
+        allRows = [];
+
+        Object.keys(families).forEach(fid => {
+          const f = families[fid];
+
+          const name = f.FamilyElderlyName || "-";
+          const email = f.FamilyElderlyEmail || "-";
+          const phone = f.FamilyElderlyPhone || "-";
+          const type = f.FamilyElderlyType || "-";
+          const image = f.FamilyElderlyURL || "https://via.placeholder.com/45";
+
+          const m = management[fid] || {};
+          const status = m.FamilyElderlyManagmentStatus || "Active";
+          const reason = m.FamilyElderlyManagmentReason || "-";
+
+          // Resolve Admin Name
+          const lastAdminId = m.AdminID;
+          let adminNameDisplay = "-";
+          
+          if (lastAdminId) {
+             adminNameDisplay = adminsMap[lastAdminId]?.AdminName || "Unknown Admin";
+          }
+
+          allRows.push({
+            familyId: fid,
+            name,
+            email,
+            phone,
+            type,
+            image,
+            status,
+            reason,
+            adminName: adminNameDisplay // Added field
+          });
+        });
+
+        // Initial Render
+        window.applyFilter();
+
+      } catch (err) {
+        console.error("Error loading data:", err);
+        tbody.innerHTML = `<tr><td colspan="9" style="color:var(--danger); text-align:center;">Error: ${err.message}</td></tr>`;
+      }
+    }
+
+    // --- Render Table ---
+    function renderTable(rows) {
+      const tbody = document.getElementById("familyTableBody");
+      tbody.innerHTML = "";
+
+      if (rows.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; padding:20px;">No data found</td></tr>`;
+        return;
+      }
+
+      rows.forEach(row => {
+        const tr = document.createElement("tr");
+
+        // Status Styling matches user-management.css
+        let statusClass = "status-active";
+        if (row.status === "Warning") statusClass = "status-warning";
+        if (row.status === "Suspended") statusClass = "status-suspended";
+
+        tr.innerHTML = `
+          <td><img src="${row.image}" class="profile-thumb" alt="Profile"></td>
+          <td><strong>${row.name}</strong></td>
+          <td>${row.email}</td>
+          <td>${row.phone}</td>
+          <td>${row.type}</td>
+          <td><span class="status-badge ${statusClass}">${row.status}</span></td>
+          <td style="color:#666; font-size:13px; max-width:150px;">${row.reason}</td>
+          <td style="font-size:13px; color:#555;">${row.adminName}</td> <td>
+            <div class="action-group">
+              <button class="btn-action btn-warn" onclick="window.takeAction('Warning','${row.familyId}')">⚠ Warn</button>
+              <button class="btn-action btn-suspend" onclick="window.takeAction('Suspended','${row.familyId}')">⛔ Suspend</button>
+              <button class="btn-action btn-activate" onclick="window.takeAction('Active','${row.familyId}')">✔ Activate</button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // --- Exposed Functions ---
+
+    window.applyFilter = () => {
+      const query = document.getElementById("searchInput").value.toLowerCase();
+      const filtered = allRows.filter(row =>
+        row.name.toLowerCase().includes(query) ||
+        row.email.toLowerCase().includes(query) ||
+        row.phone.toLowerCase().includes(query) ||
+        row.type.toLowerCase().includes(query) ||
+        row.status.toLowerCase().includes(query)
+      );
+      renderTable(filtered);
+    };
+
+    window.takeAction = async (status, familyId) => {
+      let reason = "-";
+      
+      if (status !== 'Active') {
+        reason = prompt("Enter reason for " + status + ":");
+        if (!reason || reason.trim() === "") {
+          return; // Cancelled
+        }
+      } else {
+        if(!confirm("Re-activate this account?")) return;
+        reason = "Account Reactivated by Admin";
+      }
+
+      const data = {
+        FamilyElderlyManagmentID: familyId,
+        FamilyElderlyManagmentStatus: status,
+        FamilyElderlyManagmentReason: reason.trim(),
+        FamilyElderlyID: familyId,
+        AdminID: ADMIN_UID, // Records current admin ID
+        LastUpdated: new Date().toISOString()
+      };
+
+      try {
+        await set(ref(db, "FamilyElderlyManagment/" + familyId), data);
+        loadData(); // Refresh table
+      } catch (err) {
+        alert("Failed to update: " + err.message);
+      }
+    };
+  </script>
+</head>
+
+<body>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      
+      <div class="welcome-banner">
+        <h1>Family / Elderly Management</h1>
+        <p>Monitor accounts and manage access permissions.</p>
+      </div>
+
+      <div class="page-controls">
+        <input type="text" id="searchInput" class="search-input" 
+               placeholder="Search by name, email, or status..." 
+               onkeyup="window.applyFilter()">
+        
+        <button onclick="location.reload()" class="btn-refresh">Refresh List</button>
+      </div>
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Profile</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Phone</th>
+              <th>Type</th>
+              <th>Status</th>
+              <th>Reason</th>
+              <th>Last Updated By</th> <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="familyTableBody"></tbody>
+        </table>
+      </div>
+
+    </div>
+  </main>
+
+</body>
+</html>

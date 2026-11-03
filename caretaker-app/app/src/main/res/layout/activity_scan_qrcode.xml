@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <com.journeyapps.barcodescanner.CompoundBarcodeView
+        android:id="@+id/barcodeScannerView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <Button
+        android:id="@+id/btnGallery"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Upload from Gallery"
+        android:textColor="#FFFFFF"
+        android:backgroundTint="#80000000"
+        android:paddingHorizontal="20dp"
+        android:drawableLeft="@android:drawable/ic_menu_gallery"
+        android:drawablePadding="8dp"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginBottom="40dp" />
+
+</FrameLayout>

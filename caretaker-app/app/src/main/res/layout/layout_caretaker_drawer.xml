@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/leftDrawer"
+    android:layout_width="280dp"
+    android:layout_height="match_parent"
+    android:layout_gravity="start"
+    android:orientation="vertical"
+    android:background="#F6F5F0"
+    android:padding="20dp"
+    android:clickable="true"
+    android:focusable="true"
+    android:elevation="8dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center_horizontal"
+        android:paddingBottom="20dp">
+
+        <ImageView
+            android:id="@+id/drawerProfileImage"
+            android:layout_width="90dp"
+            android:layout_height="90dp"
+            android:src="@drawable/ic_profile_placeholder"
+            android:scaleType="centerCrop"
+            android:background="@drawable/circle_bg"
+            android:layout_marginBottom="8dp"
+            android:clipToOutline="true"
+            android:outlineProvider="background" />
+
+        <TextView
+            android:id="@+id/drawerProfileName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Caretaker Name"
+            android:textColor="#5A3D2B"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#DDD"
+        android:layout_marginBottom="20dp" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:id="@+id/menuHome"
+                style="@style/DrawerMenuItem">
+                <ImageView
+                    android:layout_width="26dp"
+                    android:layout_height="26dp"
+                    android:src="@drawable/ic_home"
+                    app:tint="#5A3D2B" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Home"
+                    android:textSize="18sp"
+                    android:textColor="#5A3D2B"
+                    android:layout_marginStart="14dp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/menuBookings"
+                style="@style/DrawerMenuItem">
+                <ImageView
+                    android:layout_width="26dp"
+                    android:layout_height="26dp"
+                    android:src="@drawable/ic_booking"
+                    app:tint="#5A3D2B" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Bookings"
+                    android:textSize="18sp"
+                    android:textColor="#5A3D2B"
+                    android:layout_marginStart="14dp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/menuMessages"
+                style="@style/DrawerMenuItem">
+                <ImageView
+                    android:layout_width="26dp"
+                    android:layout_height="26dp"
+                    android:src="@drawable/ic_message"
+                    app:tint="#5A3D2B" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Chats"
+                    android:textSize="18sp"
+                    android:textColor="#5A3D2B"
+                    android:layout_marginStart="14dp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/menuAdvertisement"
+                style="@style/DrawerMenuItem">
+                <ImageView
+                    android:layout_width="26dp"
+                    android:layout_height="26dp"
+                    android:src="@drawable/ic_advertise"
+                    app:tint="#5A3D2B" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Advertisement"
+                    android:textSize="18sp"
+                    android:textColor="#5A3D2B"
+                    android:layout_marginStart="14dp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/subMenuAdvertisement"
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                android:paddingStart="40dp"
+                android:paddingTop="4dp">
+
+                <TextView
+                    android:id="@+id/subMenuAdvertiseService"
+                    android:text="• Advertise Service"
+                    android:textSize="16sp"
+                    android:textColor="#5A3D2B"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="6dp" />
+
+                <TextView
+                    android:id="@+id/subMenuViewAds"
+                    android:text="• View My Advertisements"
+                    android:textSize="16sp"
+                    android:textColor="#5A3D2B"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="6dp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/menuMyReports"
+                style="@style/DrawerMenuItem">
+                <ImageView
+                    android:layout_width="26dp"
+                    android:layout_height="26dp"
+                    android:src="@drawable/ic_report"
+                    app:tint="#5A3D2B"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="My Reports"
+                    android:textSize="18sp"
+                    android:textColor="#5A3D2B"
+                    android:layout_marginStart="14dp"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/menuProfile"
+                style="@style/DrawerMenuItem">
+                <ImageView
+                    android:layout_width="26dp"
+                    android:layout_height="26dp"
+                    android:src="@drawable/ic_profile"
+                    app:tint="#5A3D2B" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Profile"
+                    android:textSize="18sp"
+                    android:textColor="#5A3D2B"
+                    android:layout_marginStart="14dp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/menuSubmit"
+                style="@style/DrawerMenuItem">
+                <ImageView
+                    android:layout_width="26dp"
+                    android:layout_height="26dp"
+                    android:src="@drawable/ic_submit"
+                    app:tint="#5A3D2B" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Submit Documents"
+                    android:textSize="18sp"
+                    android:textColor="#5A3D2B"
+                    android:layout_marginStart="14dp" />
+            </LinearLayout>
+
+        </LinearLayout>
+    </ScrollView>
+
+    <LinearLayout
+        android:id="@+id/menuLogout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:padding="12dp"
+        android:layout_marginTop="10dp">
+
+        <ImageView
+            android:id="@+id/logoutIcon"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_logout"
+            app:tint="#5A3D2B" />
+
+        <TextView
+            android:id="@+id/menuLogoutText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Log Out"
+            android:textSize="18sp"
+            android:textColor="#5A3D2B"
+            android:layout_marginStart="12dp" />
+    </LinearLayout>
+
+</LinearLayout>

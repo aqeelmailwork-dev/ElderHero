@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:padding="12dp"
+    android:layout_margin="6dp"
+    android:background="#FFFFFF"
+    android:elevation="2dp"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <TextView
+        android:id="@+id/tvReportBooking"
+        android:text="Booking: xxx"
+        android:textStyle="bold"
+        android:textColor="#5A3D2B"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <TextView
+        android:id="@+id/tvReportCategory"
+        android:text="Category: ..."
+        android:textColor="#333"
+        android:layout_marginTop="4dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+    <TextView
+        android:id="@+id/tvReportReporter"
+        android:text="Reported by: Family"
+        android:textColor="#5A3D2B"
+        android:textStyle="italic"
+        android:layout_marginTop="4dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+    <TextView
+        android:id="@+id/tvReportStatus"
+        android:text="Status: Pending"
+        android:textStyle="bold"
+        android:textColor="#C62828"
+        android:layout_marginTop="4dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+    <TextView
+        android:id="@+id/tvReportDetails"
+        android:text="Details..."
+        android:textColor="#444"
+        android:layout_marginTop="6dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+    <TextView
+        android:id="@+id/tvReportTime"
+        android:text="Reported on: ..."
+        android:textSize="12sp"
+        android:textColor="#777"
+        android:layout_marginTop="6dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+</LinearLayout>

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="20dp"
+    android:background="@drawable/bg_elderhero_box"
+    android:gravity="center">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Warning from Admin"
+        android:textColor="#5A3D2B"
+        android:textStyle="bold"
+        android:textSize="20sp"
+        android:layout_marginBottom="12dp" />
+
+    <TextView
+        android:id="@+id/txtWarningMessage"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="#5A3D2B"
+        android:textSize="16sp"
+        android:layout_marginBottom="22dp" />
+
+    <TextView
+        android:id="@+id/btnContinue"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Continue"
+        android:padding="12dp"
+        android:textStyle="bold"
+        android:textColor="@android:color/white"
+        android:gravity="center"
+        android:background="@drawable/bg_elderhero_button" />
+
+</LinearLayout>

@@ -1,0 +1,20 @@
+# Local configuration and secrets (copy the *.example files instead)
+local.properties
+google-services.json
+admin-web/API/firebase-config.js
+.env
+
+# Emulator data
+server/data/*
+!server/data/.gitkeep
+
+# Build output and IDE files
+build/
+.gradle/
+.idea/
+*.iml
+.vscode/
+.DS_Store
+captures/
+.externalNativeBuild/
+.cxx/

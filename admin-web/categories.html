@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manage Categories</title>
+
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="dashboard.css">
+  <link rel="stylesheet" href="list.css">
+  <link rel="stylesheet" href="categories.css">
+
+  <style>
+    /* Inline styles for specific edit/action buttons to ensure immediate visibility */
+    .btn-edit {
+      background-color: #ffc107;
+      color: #000;
+      border: none;
+      padding: 5px 10px;
+      cursor: pointer;
+      border-radius: 4px;
+      margin-right: 5px;
+      font-size: 0.9em;
+    }
+    .btn-edit:hover {
+      background-color: #e0a800;
+    }
+    .action-group {
+      display: flex;
+      gap: 5px;
+      justify-content: flex-end;
+    }
+    .subcategory-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 5px 0;
+      border-bottom: 1px solid #eee;
+    }
+    .subcategory-item:last-child {
+      border-bottom: none;
+    }
+    .subcategory-info {
+        display: flex;
+        flex-direction: column;
+    }
+    .sub-admin-tag {
+        font-size: 0.75rem;
+        color: #888;
+    }
+  </style>
+
+  <script type="module">
+    import { initLayout } from './layout.js';
+    initLayout('categories.html');
+  </script>
+
+  <script type="module">
+    import { db } from "./API/firebase.js";
+    import { ref, push, set, get, remove, update } 
+    from "https://www.gstatic.com/firebasejs/9.6.11/firebase-database.js";
+
+    const adminUid = localStorage.getItem("adminUid");
+    let adminMap = {};
+    let allCategories = {};
+
+    if (!adminUid) {
+      alert("Admin session expired. Please login.");
+      window.location.href = "index.html";
+    }
+
+    function currentDate() { return new Date().toISOString().split("T")[0]; }
+    function currentTime() { return new Date().toTimeString().split(" ")[0]; }
+
+    // Fetch all admins to map ID -> Name
+    async function loadAdmins() {
+      const snap = await get(ref(db, "Admins"));
+      if (snap.exists()) adminMap = snap.val();
+    }
+
+    function getAdminName(uid) {
+      if (!uid) return "Unknown";
+      return adminMap[uid]?.AdminName || "Unknown Admin";
+    }
+
+    // --- CREATE FUNCTIONS ---
+
+    async function addService() {
+      const name = document.getElementById("serviceName").value.trim();
+      if (!name) return alert("Enter category name");
+
+      const refCat = push(ref(db, "Categories"));
+      const data = {
+        CategoryName: name,
+        adminId: adminUid,
+        CategoryDateAdd: currentDate(),
+        CategoryTimeAdd: currentTime(),
+        CategoryDateUpdate: currentDate(),
+        CategoryTimeUpdate: currentTime()
+      };
+
+      await set(refCat, data);
+      document.getElementById("serviceName").value = "";
+      loadServices();
+    }
+
+    async function addSubservice() {
+      const categoryId = document.getElementById("categoryDropdown").value;
+      const name = document.getElementById("subCategoryInput").value.trim();
+
+      if (!categoryId) return alert("Select category");
+      if (!name) return alert("Enter subcategory");
+
+      const subRef = push(ref(db, `Categories/${categoryId}/SubCategories`));
+
+      const data = {
+        SubCategoryName: name,
+        adminId: adminUid, 
+        SubCategoryDateAdd: currentDate(),
+        SubCategoryTimeAdd: currentTime(),
+        SubCategoryDateUpdate: currentDate(),
+        SubCategoryTimeUpdate: currentTime()
+      };
+
+      await set(subRef, data);
+
+      await update(ref(db, `Categories/${categoryId}`), {
+        CategoryDateUpdate: currentDate(),
+        CategoryTimeUpdate: currentTime()
+      });
+
+      document.getElementById("subCategoryInput").value = "";
+      loadServices();
+    }
+
+    // --- EDIT FUNCTIONS (NEW) ---
+
+    async function editService(categoryId, currentName) {
+      const newName = prompt("Edit Category Name:", currentName);
+      
+      if (newName && newName.trim() !== "" && newName !== currentName) {
+        await update(ref(db, `Categories/${categoryId}`), {
+            CategoryName: newName.trim(),
+            CategoryDateUpdate: currentDate(),
+            CategoryTimeUpdate: currentTime()
+        });
+        loadServices();
+      }
+    }
+
+    async function editSubservice(categoryId, subId, currentName) {
+      const newName = prompt("Edit Subcategory Name:", currentName);
+
+      if (newName && newName.trim() !== "" && newName !== currentName) {
+        // Update the subcategory
+        await update(ref(db, `Categories/${categoryId}/SubCategories/${subId}`), {
+            SubCategoryName: newName.trim(),
+            SubCategoryDateUpdate: currentDate(),
+            SubCategoryTimeUpdate: currentTime()
+        });
+
+        // Also update the parent category's timestamp
+        await update(ref(db, `Categories/${categoryId}`), {
+            CategoryDateUpdate: currentDate(),
+            CategoryTimeUpdate: currentTime()
+        });
+
+        loadServices();
+      }
+    }
+
+    // --- DELETE FUNCTIONS ---
+
+    async function deleteService(categoryId) {
+      if (!confirm("Delete this category and all subcategories?")) return;
+      await remove(ref(db, `Categories/${categoryId}`));
+      loadServices();
+    }
+
+    async function deleteSubservice(categoryId, subId) {
+      if (!confirm("Delete this subcategory?")) return;
+
+      await remove(ref(db, `Categories/${categoryId}/SubCategories/${subId}`));
+
+      await update(ref(db, `Categories/${categoryId}`), {
+        CategoryDateUpdate: currentDate(),
+        CategoryTimeUpdate: currentTime()
+      });
+
+      loadServices();
+    }
+
+    // --- LOAD & RENDER FUNCTIONS ---
+
+    async function loadServices() {
+      await loadAdmins(); 
+      const snap = await get(ref(db, "Categories"));
+      allCategories = snap.exists() ? snap.val() : {};
+      populateDropdown();
+      renderTable(allCategories);
+    }
+
+    function populateDropdown() {
+      const dd = document.getElementById("categoryDropdown");
+      dd.innerHTML = `<option value="">Select Category</option>`;
+
+      for (const id in allCategories) {
+        const opt = document.createElement("option");
+        opt.value = id;
+        opt.textContent = allCategories[id].CategoryName;
+        dd.appendChild(opt);
+      }
+    }
+
+    function searchCategories() {
+      const key = document.getElementById("searchInput").value.toLowerCase();
+
+      if (!key) return renderTable(allCategories);
+
+      const filtered = {};
+
+      for (const id in allCategories) {
+        const cat = allCategories[id];
+        let match = cat.CategoryName.toLowerCase().includes(key);
+
+        if (!match && cat.SubCategories) {
+          for (const sid in cat.SubCategories) {
+            if (cat.SubCategories[sid].SubCategoryName.toLowerCase().includes(key)) {
+              match = true;
+              break;
+            }
+          }
+        }
+        if (match) filtered[id] = cat;
+      }
+
+      renderTable(filtered);
+    }
+
+    function renderTable(data) {
+      const tbody = document.getElementById("categoryTableBody");
+      tbody.innerHTML = "";
+
+      if (!data || Object.keys(data).length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:20px;">No categories found</td></tr>`;
+        return;
+      }
+
+      for (const catId in data) {
+        const cat = data[catId];
+        const createdBy = getAdminName(cat.adminId);
+        
+        // Render Subcategories
+        const subs = cat.SubCategories
+          ? Object.keys(cat.SubCategories).map(subId => {
+              const sub = cat.SubCategories[subId];
+              const subAdminName = getAdminName(sub.adminId);
+              // Escape quotes for the onclick function
+              const safeName = sub.SubCategoryName.replace(/'/g, "\\'"); 
+              
+              return `
+              <div class="subcategory-item">
+                <div class="subcategory-info">
+                  <span>${sub.SubCategoryName}</span>
+                  <span class="sub-admin-tag">Added by: ${subAdminName}</span>
+                </div>
+                <div class="action-group">
+                    <button class="btn-edit" onclick="editSubservice('${catId}','${subId}', '${safeName}')">Edit</button>
+                    <button class="btn-delete" onclick="deleteSubservice('${catId}','${subId}')">Delete</button>
+                </div>
+              </div>
+            `;
+          }).join("")
+          : "<em style='color:#999'>No subcategories</em>";
+
+        const safeCatName = cat.CategoryName.replace(/'/g, "\\'");
+
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td><strong>${cat.CategoryName}</strong></td>
+          <td style="min-width:300px;">${subs}</td>
+          <td>${createdBy}</td>
+          
+          <td>${cat.CategoryDateAdd || "-"}</td>
+          <td>${cat.CategoryTimeAdd || "-"}</td>
+
+          <td>${cat.CategoryDateUpdate || "-"}</td>
+          <td>${cat.CategoryTimeUpdate || "-"}</td>
+
+          <td>
+            <div class="action-group" style="justify-content: center;">
+                <button class="btn-edit" onclick="editService('${catId}', '${safeCatName}')">Edit</button>
+                <button class="btn-delete" style="background:#dc3545;" onclick="deleteService('${catId}')">Delete</button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(row);
+      }
+    }
+
+    // Expose functions to window for HTML onclick events
+    window.addService = addService;
+    window.addSubservice = addSubservice;
+    window.searchCategories = searchCategories;
+    window.deleteService = deleteService;
+    window.deleteSubservice = deleteSubservice;
+    window.editService = editService;
+    window.editSubservice = editSubservice;
+    
+    window.onload = loadServices;
+  </script>
+
+</head>
+<body>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+
+      <div class="welcome-banner">
+        <h1>Categories Management</h1>
+        <p>Create, update, and manage categories & subcategories.</p>
+      </div>
+
+      <div class="controls-wrapper">
+
+        <div class="control-box">
+          <h3>Add Category</h3>
+          <input type="text" id="serviceName" placeholder="Enter new category name">
+          <button class="btn-primary" onclick="addService()">Add Category</button>
+        </div>
+
+        <div class="control-box">
+          <h3>Add Subcategory</h3>
+          <select id="categoryDropdown"></select>
+          <input type="text" id="subCategoryInput" placeholder="Enter subcategory name">
+          <button class="btn-primary" onclick="addSubservice()">Add Subcategory</button>
+        </div>
+
+      </div>
+
+      <input type="text" id="searchInput" placeholder="Search category or subcategory..." class="search-input" onkeyup="searchCategories()" style="margin-bottom: 20px;">
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Category</th>
+              <th>Subcategories</th>
+              <th>Created By</th>
+              <th>Date Added</th>
+              <th>Time Added</th>
+              <th>Date Updated</th>
+              <th>Time Updated</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="categoryTableBody"></tbody>
+        </table>
+      </div>
+
+      <button class="btn-back" onclick="location.href='dashboard.html'">← Back to Dashboard</button>
+
+    </div>
+  </main>
+
+</body>
+</html>

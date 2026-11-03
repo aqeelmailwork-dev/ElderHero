@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PDF Submissions</title>
+  
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="dashboard.css">
+  <link rel="stylesheet" href="list.css">
+  <link rel="stylesheet" href="user-management.css">
+
+  <script type="module">
+    import { initLayout } from './layout.js';
+    initLayout('submissions.html');
+  </script>
+
+  <script type="module">
+    import { db, auth } from "./API/firebase.js";
+    import { ref, get, update } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
+
+    let ADMIN_UID = null;
+
+    document.addEventListener("DOMContentLoaded", () => {
+      onAuthStateChanged(auth, (user) => {
+        if (!user) {
+          window.location.href = "login.html";
+          return;
+        }
+        ADMIN_UID = user.uid;
+        loadSubmissions();
+      });
+    });
+
+    // --- Helpers to fetch related data ---
+
+    async function getCaretakerDetails(uid) {
+      if (!uid) return { name: "Unknown", email: "-" };
+      try {
+        const snap = await get(ref(db, `Caretakers/${uid}`));
+        if (snap.exists()) {
+          const val = snap.val();
+          return {
+            name: val.CaretakerName || "Unknown",
+            email: val.CaretakerEmail || "-"
+          };
+        }
+        return { name: "Unknown", email: "-" };
+      } catch (e) { return { name: "Error", email: "Error" }; }
+    }
+
+    async function getAdminName(adminUid) {
+      if (!adminUid) return "-";
+      try {
+        const snap = await get(ref(db, `Admins/${adminUid}/AdminName`));
+        return snap.exists() ? snap.val() : "Admin";
+      } catch (e) { return "Admin"; }
+    }
+
+    // --- Main Load Function ---
+    async function loadSubmissions() {
+      const tableBody = document.getElementById("submissionTableBody");
+      
+      try {
+        const snapshot = await get(ref(db, "Submissions"));
+        
+        if (!snapshot.exists()) {
+          tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 20px;">No submissions found.</td></tr>`;
+          return;
+        }
+
+        const data = snapshot.val();
+        tableBody.innerHTML = "";
+        
+        const entries = Object.keys(data).map(key => ({ id: key, ...data[key] }));
+
+        for (const submission of entries) {
+          const caretakerID = submission.CaretakerID;
+          const adminID     = submission.AdminID;
+          const status      = submission.SubmissionStatus; 
+          const pdfURL      = submission.SubmissionURL; 
+          const subID       = submission.SubmissionID || submission.id;
+
+          // Fetch extra details
+          const caretaker = await getCaretakerDetails(caretakerID);
+          const adminName = adminID ? await getAdminName(adminID) : "Pending";
+          
+          // Status styling from user-management.css
+          let statusClass = "status-pending"; // Default yellow
+          if(status === "Approved") statusClass = "status-approved"; // Green
+          if(status === "Rejected") statusClass = "status-rejected"; // Red
+
+          const row = document.createElement("tr");
+          
+          row.innerHTML = `
+            <td><strong>${caretaker.name}</strong></td>
+            <td>${caretaker.email}</td>
+            <td>${adminName}</td>
+            <td><span class="status-badge ${statusClass}">${status || "Pending"}</span></td>
+            <td>
+              <a href="${pdfURL}" target="_blank" class="btn-action" style="background-color: var(--text-grey); text-decoration:none;">View PDF</a>
+            </td>
+            <td>
+              ${status === "Approved" || status === "Rejected" ? 
+                `<span style="color:#aaa; font-size:12px;">Completed</span>` : 
+                `
+                <div class="action-group">
+                  <button class="btn-action btn-activate" onclick="window.updateStatus('${subID}', 'Approved')">Approve</button>
+                  <button class="btn-action btn-suspend" onclick="window.updateStatus('${subID}', 'Rejected')">Reject</button>
+                </div>
+                `
+              }
+            </td>
+          `;
+          tableBody.appendChild(row);
+        }
+
+      } catch (error) {
+        console.error("Error loading submissions:", error);
+        tableBody.innerHTML = `<tr><td colspan="6" style="color:var(--danger); text-align:center;">Error loading data: ${error.message}</td></tr>`;
+      }
+    }
+
+    // --- Expose Update Function ---
+    window.updateStatus = async (submissionId, newStatus) => {
+      if (!confirm(`Mark this submission as ${newStatus}?`)) return;
+
+      try {
+        await update(ref(db, `Submissions/${submissionId}`), {
+          SubmissionStatus: newStatus,
+          AdminID: ADMIN_UID
+        });
+        
+        loadSubmissions();
+        
+      } catch (error) {
+        alert("Error updating status: " + error.message);
+      }
+    };
+  </script>
+</head>
+
+<body>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      
+      <div class="welcome-banner">
+        <h1>Submitted PDFs</h1>
+        <p>Review and verify caretaker applications.</p>
+      </div>
+
+      <div class="page-controls">
+         <div style="flex-grow:1"></div>
+         <button onclick="location.reload()" class="btn-refresh">Refresh List</button>
+      </div>
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Caretaker Name</th>
+              <th>Email</th>
+              <th>Reviewed By</th>
+              <th>Status</th>
+              <th>Document</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="submissionTableBody">
+            <tr><td colspan="6" style="text-align:center; padding: 30px; color: #999;">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </main>
+
+</body>
+</html>

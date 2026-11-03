@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Caretakers List</title>
+  
+  <link rel="stylesheet" href="style.css">
+  
+  <link rel="stylesheet" href="dashboard.css">
+  
+  <link rel="stylesheet" href="list.css">
+</head>
+
+<body>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      
+      <div class="welcome-banner">
+        <h1>Caretakers List</h1>
+        <p>View details of all registered caretakers.</p>
+      </div>
+
+      <div class="page-controls">
+        <input type="text" id="searchInput" class="search-input" placeholder="Search by name, email, profession, or language...">
+        <button onclick="window.location.reload()" class="btn-refresh">Refresh List</button>
+      </div>
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Profile</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Phone</th>
+              <th>Profession</th>
+              <th>Experience</th>
+              <th>Age</th>
+              <th>Gender</th>
+              <th>Race</th>
+              <th>Language</th>
+            </tr>
+          </thead>
+          <tbody id="caretakerTableBody">
+            <tr>
+              <td colspan="10" style="text-align:center; padding: 30px; color: var(--text-grey);">
+                Loading data...
+                <div class="loader" style="margin: 10px auto; border-color: #eee; border-top-color: var(--primary-color);"></div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </main>
+
+  <script type="module" src="carelist.js"></script>
+</body>
+</html>

@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F6F5F0">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:padding="20dp"
+        android:gravity="center_horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <!-- 🔔 Notification Box -->
+        <LinearLayout
+            android:id="@+id/notificationBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="12dp"
+            android:background="#FFEB3B"
+            android:layout_marginBottom="16dp"
+            android:visibility="gone"
+            android:elevation="4dp"
+            android:gravity="center_vertical">
+
+            <ImageView
+                android:id="@+id/notificationIcon"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@android:drawable/ic_dialog_info"
+                android:tint="#5A3D2B"
+                android:layout_marginEnd="8dp" />
+
+            <TextView
+                android:id="@+id/notificationText"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Status message"
+                android:textColor="#000000"
+                android:textSize="16sp" />
+
+            <ImageButton
+                android:id="@+id/closeNotificationBtn"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:background="@android:color/transparent"
+                android:src="@android:drawable/ic_menu_close_clear_cancel"
+                android:tint="#555555" />
+        </LinearLayout>
+
+        <!-- Title -->
+        <TextView
+            android:id="@+id/uploadTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="📄 Upload Your PDF Document"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="#5A3D2B"
+            android:layout_marginBottom="24dp" />
+
+        <!-- Pick File Button -->
+        <Button
+            android:id="@+id/pickFileBtn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Choose PDF"
+            android:padding="14dp"
+            android:backgroundTint="#5A3D2B"
+            android:textColor="@android:color/white"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Selected File Name -->
+        <TextView
+            android:id="@+id/fileNameText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="No file selected"
+            android:textSize="16sp"
+            android:textColor="#333333"
+            android:padding="10dp"
+            android:layout_marginBottom="20dp" />
+
+        <!-- Upload Button -->
+        <Button
+            android:id="@+id/uploadBtn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Upload PDF"
+            android:padding="14dp"
+            android:backgroundTint="#A57A3C"
+            android:textColor="@android:color/white" />
+
+    </LinearLayout>
+</ScrollView>
